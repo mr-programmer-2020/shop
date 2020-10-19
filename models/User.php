@@ -2,25 +2,27 @@
 
 class User
 {
-    public static function register($name, $email, $password) {
-        
+    public static function register($name, $email, $password)
+    {
+
         $db = Db::getConnection();
-        
+
         $sql = 'INSERT INTO user (name, email, password)  VALUES (:name, :email, :password)';
-        
+
         $result = $db->prepare($sql);
         $result->bindParam(':name', $name, PDO::PARAM_STR);
         $result->bindParam(':email', $email, PDO::PARAM_STR);
         $result->bindParam(':password', $password, PDO::PARAM_STR);
-        $result->execute() or die(print_r($db->errorInfo(),true));
+        $result->execute() or die(print_r($db->errorInfo(), true));
 
         return true;
     }
-    
+
     /**
      * Проверяет имя: не меньше, чем 2 символа
      */
-    public static function checkName($name) {
+    public static function checkName($name)
+    {
         if (strlen($name) >= 2) {
             return true;
         }
@@ -28,52 +30,75 @@ class User
     }
 
 
-    public static function checkNumber($value){
-        return preg_match('/^[0-9]+\.?[0-9]{0,5}$/', $value) ? true :false;
+    public static function checkNumber($value)
+    {
+        return preg_match('/^[0-9]+\.?[0-9]{0,5}$/', $value) ? true : false;
     }
 
-      /**
+    /**
      * Проверяет телефон: не меньше, чем 10 символов
      */
-      public static function checkPhone($phone)
-      {
+    public static function checkPhone($phone)
+    {
         if (strlen($phone) >= 10) {
             return true;
         }
         return false;
     }
-    
+
+
+    public static function isAdmin()
+    {
+        // session_start();
+
+        if (isset($_SESSION['user'])) {
+
+            $user = self::getUserById($_SESSION['user']);
+
+            if ($user['role'] != null && $user['role'] === 'admin') {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+
+
     /**
      * Проверяет имя: не меньше, чем 6 символов
      */
-    public static function checkPassword($password) {
+    public static function checkPassword($password)
+    {
         if (strlen($password) >= 6) {
             return true;
         }
         return false;
     }
-    
+
     /**
      * Проверяет email
      */
-    public static function checkEmail($email) {
+    public static function checkEmail($email)
+    {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return true;
         }
         return false;
     }
-    
-    public static function checkEmailExists($email) {
-        
+
+    public static function checkEmailExists($email)
+    {
+
         $db = Db::getConnection();
-        
+
         $sql = 'SELECT COUNT(*) FROM user WHERE email = :email';
-        
+
         $result = $db->prepare($sql);
         $result->bindParam(':email', $email, PDO::PARAM_STR);
         $result->execute();
 
-        if($result->fetchColumn())
+        if ($result->fetchColumn())
             return true;
         return false;
     }
@@ -98,7 +123,7 @@ class User
         $result = $db->prepare($sql);
         $result->bindParam(':email', $email);
         $result->bindParam(':password', $password);
-        $result->execute() or die(print_r($db->errorInfo(),true));
+        $result->execute() or die(print_r($db->errorInfo(), true));
 
         $user = $result->fetch();
 
@@ -117,13 +142,13 @@ class User
      */
     public static function auth($userId)
     {
-       // session_start();
+        // session_start();
         $_SESSION['user'] = $userId;
     }
 
     public static function checkLogged()
     {
-       // session_start();
+        // session_start();
 
         // Если сессия есть, вернем идентификатор пользователя
         if (isset($_SESSION['user'])) {
@@ -138,14 +163,13 @@ class User
     {
         // session_start();
 
-        if (isset($_SESSION['user']) ) {
+        if (isset($_SESSION['user'])) {
             return false;
         }
         return true;
     }
 
 
-    
     /**
      * Returns user by id
      * @param integer $id
@@ -172,26 +196,25 @@ class User
     //************************************
 
 
-
-     /**
+    /**
      * Редактирование данных пользователя
      * @param string $name
      * @param string $password
      */
-     public static function edit($id, $name, $password)
-     {
+    public static function edit($id, $name, $password)
+    {
         $db = Db::getConnection();
-        
+
         $sql = "UPDATE user 
         SET name = :name, password = :password 
         WHERE id = :id";
-        
-        $result = $db->prepare($sql);                                  
-        $result->bindParam(':id', $id, PDO::PARAM_INT);       
-        $result->bindParam(':name', $name, PDO::PARAM_STR);    
-        $result->bindParam(':password', $password, PDO::PARAM_STR); 
+
+        $result = $db->prepare($sql);
+        $result->bindParam(':id', $id, PDO::PARAM_INT);
+        $result->bindParam(':name', $name, PDO::PARAM_STR);
+        $result->bindParam(':password', $password, PDO::PARAM_STR);
         return $result->execute();
     }
 
-    
+
 }
